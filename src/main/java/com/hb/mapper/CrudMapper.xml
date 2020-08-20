@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 映射文件 -->
+<mapper namespace="com.hb.mapper.CrudMapper">
+    <!-- 使用trim 重写where -->
+    <select id="query" parameterType="Person" resultType="person">
+        select * from person
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="id!=null and id>0 ">
+                id=#{id}
+            </if>
+            <if test="name != null">
+                AND name like concat(concat("%",#{name}),"%")
+            </if>
+        </trim>
+    </select>
+
+    <!-- 使用trim 重写set -->
+    <update id="update" parameterType="person">
+        update person
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null">
+                name=#{name},
+            </if>
+            <if test="password!=null">
+                password=#{password},
+            </if>
+            <if test="email!=null">
+                email=#{email}
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+
+    <sql id="key">
+        <trim suffixOverrides=",">
+            <if test="name!=null and name!=''">
+                name,
+            </if>
+            <if test="password!=null and password!=''">
+                password,
+            </if>
+            <if test="email!=null and email!=''">
+                email,
+            </if>
+        </trim>
+    </sql>
+
+    <sql id="values">
+        <trim suffixOverrides=",">
+            <if test="name!=null and name!=''">
+                #{name},
+            </if>
+            <if test="password!=null and password!=''">
+                #{password},
+            </if>
+            <if test="email!=null and email!=''">
+                #{email},
+            </if>
+        </trim>
+    </sql>
+
+    <insert id="insert" parameterType="person">
+        insert into person(<include refid="key"/>)
+        values(<include refid="values"/>)
+    </insert>
+
+    <delete id="delete" parameterType="person">
+        delete from person
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="id!=null and id>0 ">
+                id=#{id}
+            </if>
+            <if test="name != null">
+                and name like concat(concat("%",#{name}),"%")
+            </if>
+        </trim>
+    </delete>
+
+</mapper>

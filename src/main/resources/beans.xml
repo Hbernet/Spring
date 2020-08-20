@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!--开启注解-->
+    <context:annotation-config />
+    <!--注解扫描包-->
+    <context:component-scan base-package="com.hb" />
+    <!-- 读取外部db配置信息 -->
+    <context:property-placeholder location="classpath:db-config.properties"/>
+    <!-- 配置数据源 -->
+    <bean id="ds" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+
+        <!--驱动类名 -->
+        <property name="driverClass" value="${driver}"/>
+        <!-- url -->
+        <property name="jdbcUrl" value="${url}"/>
+        <!-- 用户名 -->
+        <property name="user" value="${name}"/>
+        <!-- 密码 -->
+        <property name="password" value="${password}"/>
+        <!-- 当连接池中的连接耗尽的时候c3p0一次同时获取的连接数 -->
+        <property name="acquireIncrement" value="${acquireIncrement}" />
+        <!-- 初始连接池大小 -->
+        <property name="initialPoolSize" value="${initialPoolSize}"/>
+        <!-- 连接池中连接最小个数 -->
+        <property name="minPoolSize" value="${minPoolSize}"/>
+        <!-- 连接池中连接最大个数 -->
+        <property name="maxPoolSize" value="${maxPoolSize}"/>
+
+    </bean>
+    <!-- 配置Spring整合MyBatis后的SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 数据源 -->
+        <property name="dataSource" ref="ds"/>
+        <!-- 别名包 -->
+        <property name="typeAliasesPackage" value="com.hb.pojo"/>
+        <!-- 映射文件位置-->
+        <property name="mapperLocations" value="classpath:com/hb/mapper/*Mapper.xml"/>
+        <!-- 读取MyBatis核心配置文件：其他mybatis核心配置文件中定义的内容 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!--分页插件 引入pageHelper-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <!-- 这里的几个配置主要演示如何使用，如果不理解，一定要去掉下面的配置 -->
+                    <property name="properties">
+                        <value>
+                            helperDialect=mysql
+                            reasonable=true
+                            supportMethodsArguments=true
+                            params=count=countSql
+                            autoRuntimeDialect=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+    <!-- DAO配置：自动扫描mappe包 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--指定会话工厂，如果当前上下文中只定义了一个则该属性可省去 -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!-- 指定要自动扫描接口的基础包，实现接口 -->
+        <property name="basePackage" value="com.hb.mapper"/>
+    </bean>
+
+    <!--添加spring事务管理器-->
+    <bean id="tm" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="ds"/>
+    </bean>
+    <!--开启注解配置事务管理器-->
+    <tx:annotation-driven transaction-manager="tm"/>
+
+</beans>

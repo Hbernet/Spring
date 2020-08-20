@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 映射文件 -->
+<mapper namespace="com.hb.mapper.PersonMapper">
+    <select id="selectAll" resultType="person">
+    select * from person;
+  </select>
+
+    <insert id="insert" parameterType="person">
+    insert into person (name, password, email)
+    values (#{name },#{password },#{email })
+    </insert>
+
+    <select id="selectOne" parameterType="person" resultType="person">
+        select  *from person
+        where name =#{name } and password=#{password}
+    </select>
+</mapper>
